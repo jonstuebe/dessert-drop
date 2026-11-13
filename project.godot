@@ -8,6 +8,8 @@ config/description="Drop and merge desserts in a glass jar."
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://assets/art/d5_donut.svg"
+boot_splash/bg_color.web=Color(0.68235296, 0.8784314, 0.84705883, 1)
+boot_splash/show_image.web=false
 
 [autoload]
 
@@ -39,5 +41,8 @@ common/physics_ticks_per_second=120
 [rendering]
 
 renderer/rendering_method="mobile"
+renderer/rendering_method.web="gl_compatibility"
 textures/canvas_textures/default_texture_filter=1
 anti_aliasing/quality/msaa_2d=2
+anti_aliasing/quality/msaa_2d.web=0
+environment/defaults/default_clear_color.web=Color(0.68235296, 0.8784314, 0.84705883, 1)

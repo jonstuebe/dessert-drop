@@ -94,6 +94,8 @@ func _dust(at: Vector2, speed: float) -> void:
 
 ## Small squash when something lands hard.
 func _impact(speed: float) -> void:
+	if age() >= 0.08:
+		Sfx.land(speed, tier)
 	if speed < 260.0 or sprite == null:
 		return
 	var k := clampf((speed - 260.0) / 900.0, 0.0, 0.18)
