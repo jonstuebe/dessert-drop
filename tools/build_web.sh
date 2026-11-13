@@ -74,6 +74,9 @@ for f in index.html index.js index.pck index.wasm; do
 	[[ -s "$OUT/$f" ]] || { echo "Export is missing $f" >&2; exit 1; }
 done
 
+echo "==> Copying static files (link-preview image, etc.)"
+find "$ROOT/web/public" -maxdepth 1 -type f ! -name '.gdignore' -exec cp {} "$OUT/" \;
+
 echo "==> Compressing index.wasm"
 gzip -9 -n -f "$OUT/index.wasm"   # -> index.wasm.gz
 
