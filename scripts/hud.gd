@@ -6,6 +6,7 @@ extends CanvasLayer
 signal perk_pressed(kind: String)
 signal cancel_pressed
 signal again_pressed
+signal share_pressed
 signal sheet_toggled(open: bool)
 
 const PERKS := {
@@ -16,6 +17,12 @@ const PERKS := {
 	"upgrade": {"cost": 3, "name": "Upgrade", "ring": Color("#4CBF45"), "lip": Color("#1F7A2A"),
 		"text": "Tap Upgrade, then tap a dessert to turn it into the next one up. It can't be used on a wedding cake, and a dessert made this way doesn't pay coins."},
 }
+
+## iOS-style share glyph: an open box with an arrow leaving the top.
+const SHARE_ICON := """<svg xmlns="http://www.w3.org/2000/svg" width="40" height="48" viewBox="0 0 40 48">
+<g fill="none" stroke="#4A2618" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M13 19H8a3 3 0 0 0-3 3v20a3 3 0 0 0 3 3h24a3 3 0 0 0 3-3V22a3 3 0 0 0-3-3h-5"/>
+<path d="M20 30V4M11 12l9-9 9 9"/></g></svg>"""
 
 var stage_ui: Control
 var full_ui: Control
@@ -44,6 +51,7 @@ var _over_rays: TextureRect
 var _over_top: Label
 var _over_score: Label
 var _over_best: Label
+var _over_share: Button
 var _sheet: Control
 var _sheet_panel: PanelContainer
 var _sheet_coins: Label
@@ -557,13 +565,35 @@ func _build_over() -> void:
 	_over_best = Ui.label("", 26, Ui.MUTED, 600)
 	_over_best.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(_over_best)
-	var again := Ui.pill_button("Play again", Ui.ACCENT, Color.WHITE, Ui.ACCENT_DARK, 34)
-	again.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var again := Ui.pill_button("Play again", Ui.ACCENT, Color.WHITE, Ui.ACCENT_DARK, 30)
 	again.pressed.connect(func() -> void: again_pressed.emit())
+	# a white secondary pill, so Play again stays the main action
+	_over_share = Ui.pill_button("Share", Color.WHITE, Ui.INK, Ui.EDGE, 30)
+	_over_share.icon = Art.shape("share", SHARE_ICON, 0.62)
+	_over_share.add_theme_constant_override("h_separation", 12)
+	_over_share.add_theme_constant_override("icon_max_width", 26)
+	_over_share.custom_minimum_size.x = 236  # fits "Copied!" too, so the card never jumps
+	for k: String in ["normal", "hover", "pressed"]:
+		var b := (_over_share.get_theme_stylebox(k) as StyleBoxFlat).duplicate() as StyleBoxFlat
+		b.border_width_left = 2
+		b.border_width_right = 2
+		b.border_width_top = 2
+		_over_share.add_theme_stylebox_override(k, b)
+	_over_share.pressed.connect(func() -> void: share_pressed.emit())
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 14)
 	v.add_child(spacer)
-	v.add_child(again)
+	var buttons := HBoxContainer.new()
+	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+	buttons.add_theme_constant_override("separation", 16)
+	buttons.add_child(_over_share)
+	buttons.add_child(again)
+	v.add_child(buttons)
+
+## Brief "Copied!" on the Share button, for browsers with no share sheet.
+func share_copied() -> void:
+	_over_share.text = "Copied!"
+	get_tree().create_timer(1.8).timeout.connect(func() -> void: _over_share.text = "Share")
 
 func show_game_over(score: int, new_best: bool, top: int) -> void:
 	_over_img.texture = Art.dessert(top, 75.0 * Tiers.radius(top) / maxf(Tiers.size(top).x, Tiers.size(top).y) * 2.0)

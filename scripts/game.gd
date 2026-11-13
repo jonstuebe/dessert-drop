@@ -32,6 +32,7 @@ var current := 0
 var next := 0
 var can_drop := true
 var over := false
+var new_best := false
 var mode := ""             # "", "pop" or "upgrade" while targeting with a perk
 var aim_x := 360.0
 var danger := 0.0
@@ -48,6 +49,7 @@ func _ready() -> void:
 	hud.perk_pressed.connect(_start_perk)
 	hud.cancel_pressed.connect(_cancel_perk)
 	hud.again_pressed.connect(func() -> void: get_tree().reload_current_scene())
+	hud.share_pressed.connect(_share)
 	hud.sheet_toggled.connect(func(open: bool) -> void:
 		if open:
 			_cancel_perk()
@@ -558,13 +560,43 @@ func _game_over() -> void:
 	hud.danger.modulate.a = 0.0
 	for d: Dessert in desserts.get_children():
 		d.freeze = true
-	var new_best := score > Save.best
+	new_best = score > Save.best
 	if new_best:
 		Save.best = score
 		Save.write()
 		hud.set_best(score)
 	Sfx.play("gameover")
 	hud.show_game_over(score, new_best, maxi(top_tier, 0))
+
+# ---------- sharing ----------
+const SHARE_URL := "https://dessert-drop.jonstuebe.com/"
+const SHARE_EMOJI: Array[String] = ["✨", "🍫", "🍪", "🟣", "🧁", "🍩", "🥧", "🍰", "🎂"]
+
+func share_text() -> String:
+	var top := maxi(top_tier, 0)
+	var e := SHARE_EMOJI[top]
+	var dessert := Tiers.display_name(top)
+	if new_best:
+		return "%s New high score in Dessert Drop: %s! I baked all the way up to a %s. Think you can beat it?" % [e, _commas(score), dessert]
+	return "%s I scored %s in Dessert Drop and baked a %s. Think you can beat it?" % [e, _commas(score), dessert]
+
+## Opens the share sheet where the browser has one; otherwise copies the message.
+func _share() -> void:
+	var text := share_text()
+	if OS.has_feature("web"):
+		var js := "(function(t,u){if(navigator.share){navigator.share({text:t,url:u}).catch(function(){});return true}return false})(%s,%s)" % [JSON.stringify(text), JSON.stringify(SHARE_URL)]
+		if JavaScriptBridge.eval(js, true):
+			return
+	DisplayServer.clipboard_set(text + "\n" + SHARE_URL)
+	hud.share_copied()
+
+static func _commas(n: int) -> String:
+	var s := str(absi(n))
+	var out := ""
+	while s.length() > 3:
+		out = "," + s.right(3) + out
+		s = s.left(s.length() - 3)
+	return ("-" if n < 0 else "") + s + out
 
 
 class DangerLine extends Node2D:
