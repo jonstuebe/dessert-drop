@@ -16,6 +16,10 @@
 			"custom_domain": true
 		}
 	],
+	// PR/branch Previews (`wrangler preview`, run by Workers Builds on
+	// non-production branches). Top-level assets/compat settings apply; the
+	// production custom domain intentionally does not.
+	"previews": {},
 	"observability": {
 		"enabled": true
 	}
