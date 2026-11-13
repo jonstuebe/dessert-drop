@@ -1,0 +1,22 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "dessert-drop",
+	"main": "src/worker.js",
+	"compatibility_date": "2026-11-13",
+	// Built by `npm run build` (tools/build_web.sh) from the Godot "Web" preset.
+	"assets": {
+		"directory": "./export/web",
+		"binding": "ASSETS",
+		// Only the oversized engine file goes through the Worker (see src/worker.js).
+		"run_worker_first": ["/index.wasm"]
+	},
+	"routes": [
+		{
+			"pattern": "dessert-drop.jonstuebe.com",
+			"custom_domain": true
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+}

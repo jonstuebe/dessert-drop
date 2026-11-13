@@ -1,3 +1,7 @@
 .godot/
 *.import.tmp
 export/
+node_modules/
+.cache/
+.wrangler/
+.dev.vars*
