@@ -195,13 +195,14 @@ func _build_ladder() -> void:
 	_ladder_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ladder_glow.modulate = Color(1, 1, 0.92, 0.0)
 	stage_ui.add_child(_ladder_glow)
-	var max_r := Tiers.radius(Tiers.TOP)
+	var max_h := Tiers.size(Tiers.TOP).y
 	var widths: Array[float] = []
 	var heights: Array[float] = []
 	var total := 0.0
 	for i in Tiers.count():
 		var sz := Tiers.size(i)
-		var h := 26.0 + 64.0 * (Tiers.radius(i) / max_r) * (sz.y / Tiers.radius(i) / 2.0)
+		# true to the jar: heights keep the same ratios as the bodies themselves
+		var h := 90.0 * sz.y / max_h
 		var w := h * sz.x / sz.y
 		heights.append(h)
 		widths.append(w)
