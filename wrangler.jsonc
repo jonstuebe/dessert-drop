@@ -20,6 +20,8 @@
 	// non-production branches). Top-level assets/compat settings apply; the
 	// production custom domain intentionally does not.
 	"previews": {},
+	// Serve per-version Preview URLs at <version>-dessert-drop.<subdomain>.workers.dev.
+	"preview_urls": true,
 	"observability": {
 		"enabled": true
 	}
