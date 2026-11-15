@@ -10,7 +10,7 @@ const COIN_REWARD := {7: 2, 8: 5}   # strawberry cake, wedding cake
 
 const DATA := [
 	{"key": "sprinkle", "file": "d0_sprinkle", "name": "Sprinkle", "shape": "rect", "bw": 2.6, "bh": 1.1, "scale": 0.5, "bounce": 0.45, "tone": Color("#FF8FB1")},
-	{"key": "chip", "file": "d1_chip", "name": "Chocolate chip", "shape": "circle", "bounce": 0.38, "tone": Color("#96572F")},
+	{"key": "chip", "file": "d1_chip", "name": "Chocolate chip", "shape": "circle", "scale": 0.9, "bounce": 0.38, "tone": Color("#96572F")},
 	{"key": "cookie", "file": "d2_cookie", "name": "Cookie", "shape": "circle", "tone": Color("#E8B063")},
 	{"key": "macaron", "file": "d3_macaron", "name": "Macaron", "shape": "rect", "bw": 2.1, "bh": 1.5, "tone": Color("#CBB5F7")},
 	{"key": "cupcake", "file": "d4_cupcake", "name": "Cupcake", "shape": "rect", "bw": 1.65, "bh": 1.95, "tone": Color("#8ED4F7")},
