@@ -9,7 +9,7 @@ const DROP_WEIGHTS: Array[float] = [0.34, 0.30, 0.22, 0.14]
 const COIN_REWARD := {7: 2, 8: 5}   # strawberry cake, wedding cake
 
 const DATA := [
-	{"key": "sprinkle", "file": "d0_sprinkle", "name": "Sprinkle", "shape": "rect", "bw": 2.6, "bh": 1.1, "scale": 0.5, "bounce": 0.45, "tone": Color("#FF8FB1")},
+	{"key": "sprinkle", "file": "d0_sprinkle", "name": "Sprinkle", "shape": "rect", "bw": 2.6, "bh": 1.1, "scale": 0.52, "bounce": 0.45, "tone": Color("#FF8FB1")},
 	{"key": "chip", "file": "d1_chip", "name": "Chocolate chip", "shape": "circle", "scale": 0.9, "bounce": 0.38, "tone": Color("#96572F")},
 	{"key": "cookie", "file": "d2_cookie", "name": "Cookie", "shape": "circle", "tone": Color("#E8B063")},
 	{"key": "macaron", "file": "d3_macaron", "name": "Macaron", "shape": "rect", "bw": 2.1, "bh": 1.5, "tone": Color("#CBB5F7")},
