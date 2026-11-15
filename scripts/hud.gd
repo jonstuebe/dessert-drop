@@ -207,9 +207,9 @@ func _build_ladder() -> void:
 		heights.append(h)
 		widths.append(w)
 		total += w
-	# Fill the shelf's full width: grow the row (up to 120 px tall, so it stays
+	# Fill the shelf's full width: grow the row (up to 135 px tall, so it stays
 	# clear of the header), then spread what's left over as even gaps.
-	var fit := minf((660.0 - 10.0 * 8) / total, 120.0 / 90.0)
+	var fit := minf((660.0 - 10.0 * 8) / total, 135.0 / 90.0)
 	var gap := (660.0 - total * fit) / 8.0
 	var x := 360.0 - 660.0 / 2.0
 	for i in Tiers.count():
