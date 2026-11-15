@@ -2,7 +2,7 @@ class_name Tiers
 ## The dessert ladder: sizes, physics shapes and scoring for each tier.
 ## Art is drawn at a base radius of 30 design units (see assets/art/d*.svg).
 
-const SCALE := 2.0          # prototype pixels -> game pixels (25% up from 1.6)
+const SCALE := 1.6          # prototype pixels -> game pixels
 const ART_R := 30.0         # radius the SVG art is drawn at
 const GROWTH: Array[float] = [1.10, 1.13, 1.16, 1.19, 1.22, 1.25, 1.28, 1.31]
 const DROP_WEIGHTS: Array[float] = [0.34, 0.30, 0.22, 0.14]

@@ -17,10 +17,7 @@ extends Node
 
 const K := 8.0                 # silhouette raster scale (px per design unit)
 const ALPHA := 0.5             # alpha threshold for "visible"
-# game px allowed between visible outlines. Round-ish tiers (cookie) keep a
-# circle so they roll; their art is ~±1.5 px out of round at SCALE 2.0, so a
-# contact can show up to ~2 px at some angles.
-const MAX_GAP := 2.0
+const MAX_GAP := 1.5           # game px allowed between visible outlines
 const MAX_OVERLAP := 2.0       # game px of visible overlap allowed
 const SETTLE_FRAMES := 480     # 4 s at 120 Hz
 
