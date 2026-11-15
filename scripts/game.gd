@@ -291,6 +291,7 @@ func _merge(a: Dessert, b: Dessert) -> void:
 	var i := a.tier
 	a.queue_free()
 	b.queue_free()
+	_wake_all()
 	_clear_hint()
 
 	if i == Tiers.TOP:
@@ -332,6 +333,20 @@ func _bump(pos: Vector2, r: float, skip: Dessert) -> void:
 		if dist > 0.0 and dist < reach:
 			var f := 1.0 - dist / reach
 			d.linear_velocity += delta / dist * f * 3.2 * PX + Vector2(0, -1.2 * f * PX)
+			d.sleeping = false
+
+## Freeing a body does not wake the sleeping desserts resting on it: they keep
+## hovering until something else touches them (usually the next drop). Call this
+## after removing or resizing a dessert. It wakes everything now and again on the
+## next physics frame, once the queue_free()d bodies are really gone.
+func _wake_all() -> void:
+	_wake_now()
+	if not get_tree().physics_frame.is_connected(_wake_now):
+		get_tree().physics_frame.connect(_wake_now, CONNECT_ONE_SHOT)
+
+func _wake_now() -> void:
+	for d: Dessert in desserts.get_children():
+		if not d.is_queued_for_deletion() and not d.freeze:
 			d.sleeping = false
 
 func _add_score(n: int) -> void:
@@ -443,6 +458,7 @@ func _use_perk_on(p: Vector2) -> void:
 	var pos := d.position
 	d.queue_free()
 	_spend(kind)
+	_wake_all()
 	_clear_hint()
 	if kind == "pop":
 		fx.puff(pos, Tiers.tone(i), 14)
@@ -498,7 +514,8 @@ func _sweep() -> void:
 			fx.crumbs(d.position, low, 8)
 			fx.ring(d.position, Color.WHITE, Tiers.radius(low))
 			Sfx.play("merge", 1.6 + k * 0.03, -8.0)
-			d.queue_free())
+			d.queue_free()
+			_wake_all())
 	var nm := Tiers.display_name(low).to_lower()
 	fx.float_text(Vector2(360, JAR_TOP + 120), "Swept %d %s%s" % [list.size(), nm, "s" if list.size() > 1 else ""], 38, Color("#1F68AC"))
 
