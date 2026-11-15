@@ -572,6 +572,116 @@ body {
 	}
 }
 
+/* ---------- "new version" banner ---------- */
+
+#update {
+	position: fixed;
+	z-index: 3;
+	left: 50%;
+	top: calc(10px + env(safe-area-inset-top));
+	width: min(440px, calc(100% - 24px));
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 10px 10px 12px;
+	background: var(--surface);
+	border: 2px solid var(--line);
+	border-radius: 22px;
+	box-shadow: 0 5px 0 var(--edge), 0 12px 26px rgba(51, 20, 10, 0.22);
+	font-family: var(--round);
+	color: var(--ink);
+	transform: translate(-50%, calc(-100% - 30px - env(safe-area-inset-top)));
+	visibility: hidden;
+	transition: transform 0.3s cubic-bezier(0.4, 0, 1, 1), visibility 0s linear 0.3s;
+}
+
+#update.open {
+	transform: translate(-50%, 0);
+	visibility: visible;
+	transition: transform 0.55s cubic-bezier(0.2, 1.25, 0.35, 1), visibility 0s;
+}
+
+#update img {
+	flex: none;
+	width: 42px;
+	height: 42px;
+	border-radius: 11px;
+}
+
+.update-text {
+	flex: 1;
+	min-width: 0;
+	line-height: 1.2;
+}
+
+.update-text b {
+	display: block;
+	font-family: 'Lilita One', var(--round);
+	font-weight: 400;
+	font-size: 18px;
+}
+
+.update-text span {
+	font-size: 14px;
+	color: var(--muted);
+}
+
+#update-go {
+	flex: none;
+	appearance: none;
+	border: 0;
+	padding: 9px 16px;
+	border-radius: 999px;
+	background: var(--accent);
+	box-shadow: 0 4px 0 var(--accent-dark);
+	color: #fff;
+	font-family: 'Lilita One', var(--round);
+	font-size: 17px;
+	cursor: pointer;
+}
+
+#update-go:active {
+	transform: translateY(2px);
+	box-shadow: 0 2px 0 var(--accent-dark);
+}
+
+#update-go:disabled {
+	opacity: 0.7;
+}
+
+#update-close {
+	flex: none;
+	width: 28px;
+	height: 28px;
+	display: grid;
+	place-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: var(--line);
+	color: var(--muted);
+	cursor: pointer;
+}
+
+#update-close svg {
+	width: 11px;
+	height: 11px;
+}
+
+/* small phones: give the words the icon's room */
+@media (max-width: 400px) {
+	#update img {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#update, #update.open {
+		transition-duration: 0.01s;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.dessert svg, .dessert::after, .fill { animation: none !important; }
 	.track.indeterminate .fill { left: 33%; }
@@ -613,6 +723,16 @@ body {
 					<button id="status-retry" type="button">Try again</button>
 				</div>
 			</div>
+		</div>
+
+		<div id="update" role="status" aria-live="polite" aria-hidden="true">
+			<img src="index.apple-touch-icon.png" alt="">
+			<div class="update-text">
+				<b>Fresh batch ready!</b>
+				<span>Refresh for the new version.</span>
+			</div>
+			<button id="update-go" type="button">Refresh</button>
+			<button id="update-close" type="button" aria-label="Not now"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
 		</div>
 
 		<div id="install" aria-hidden="true">
@@ -1119,6 +1239,130 @@ const engine = new Engine(GODOT_CONFIG);
 
 	// for testing: dessertDropInstallSheet() opens it regardless
 	window.dessertDropInstallSheet = open;
+}());
+		</script>
+		<script>
+// "New version" banner. Godot's service worker serves the game cache-first, so
+// after a deploy the browser installs the new worker in the background and then
+// leaves it waiting until every tab of the game is closed (for an installed iOS
+// app, that can be days). This spots the waiting worker, also checks for one
+// whenever the game comes back to the foreground, and offers a refresh. It never
+// interrupts a game in progress: the banner waits for a break between games,
+// and "Play again" picks the update up by itself (game.gd).
+(function () {
+	if (!('serviceWorker' in navigator)) {
+		return;
+	}
+	const CHECK_EVERY_MS = 30 * 60 * 1000;
+	const MIN_CHECK_GAP_MS = 60 * 1000;
+
+	const banner = document.getElementById('update');
+	const goBtn = document.getElementById('update-go');
+
+	let registration = null;
+	let waiting = null;
+	let runActive = false;
+	let dismissed = false;
+	let applying = false;
+	let lastCheck = 0;
+
+	function render() {
+		const show = waiting !== null && !runActive && !dismissed && !applying;
+		banner.classList.toggle('open', show);
+		banner.setAttribute('aria-hidden', show ? 'false' : 'true');
+	}
+
+	function found(worker) {
+		// with no controller this is the very first install, not an update
+		if (!navigator.serviceWorker.controller) {
+			return;
+		}
+		waiting = worker;
+		render();
+	}
+
+	function watch(reg) {
+		if (registration === reg) {
+			return;
+		}
+		registration = reg;
+		if (reg.waiting) {
+			found(reg.waiting);
+		}
+		reg.addEventListener('updatefound', () => {
+			const worker = reg.installing;
+			if (!worker) {
+				return;
+			}
+			worker.addEventListener('statechange', () => {
+				if (worker.state === 'installed') {
+					found(worker);
+				}
+			});
+		});
+	}
+
+	function check() {
+		if (!registration || waiting || Date.now() - lastCheck < MIN_CHECK_GAP_MS) {
+			return;
+		}
+		lastCheck = Date.now();
+		registration.update().catch(() => {
+			// offline: try again next time
+		});
+	}
+
+	// Swap in the waiting worker; it reloads every open tab of the game itself.
+	function apply() {
+		if (!waiting) {
+			return false;
+		}
+		applying = true;
+		goBtn.disabled = true;
+		render();
+		waiting.postMessage('update');
+		// fallback in case the worker can't navigate this tab
+		navigator.serviceWorker.addEventListener('controllerchange', () => {
+			setTimeout(() => window.location.reload(), 1500);
+		});
+		return true;
+	}
+
+	goBtn.addEventListener('click', apply);
+	document.getElementById('update-close').addEventListener('click', () => {
+		dismissed = true;
+		render();
+	});
+
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'visible') {
+			check();
+		}
+	});
+	setInterval(check, CHECK_EVERY_MS);
+
+	// the engine registers the service worker as the game starts
+	window.addEventListener('dessertdrop:ready', () => {
+		navigator.serviceWorker.getRegistration().then((reg) => {
+			if (reg) {
+				watch(reg);
+			}
+		});
+		navigator.serviceWorker.ready.then(watch);
+	}, { once: true });
+
+	// called from game.gd
+	window.dessertDropUpdate = {
+		// a game is underway: hold the banner until it ends
+		setRunActive(active) {
+			runActive = !!active;
+			render();
+		},
+		// "Play again": take the update if there is one; true means the page is reloading
+		applyIfReady() {
+			return apply();
+		},
+	};
 }());
 		</script>
 	</body>
