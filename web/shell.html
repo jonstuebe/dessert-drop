@@ -4,6 +4,9 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
 		<meta name="theme-color" content="#AEE0D8">
+		<meta name="apple-mobile-web-app-title" content="Dessert Drop">
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-capable" content="yes">
 		<title>$GODOT_PROJECT_NAME</title>
 		<!-- Link previews. og.png comes from web/public (copied in by tools/build_web.sh; regenerate with tools/gen_og.py, option 3). -->
 		<meta name="description" content="Drop two desserts, bake something bigger. A cozy merge game you can play right in your browser.">
@@ -316,6 +319,259 @@ body {
 	box-shadow: 0 2px 0 var(--accent-dark);
 }
 
+/* ---------- "add to home screen" sheet ---------- */
+
+#install {
+	position: fixed;
+	inset: 0;
+	z-index: 2;
+	font-family: var(--round);
+	color: var(--ink);
+	visibility: hidden;
+	pointer-events: none;
+}
+
+#install.shown {
+	visibility: visible;
+	pointer-events: auto;
+}
+
+#install-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(42, 18, 10, 0.42);
+	opacity: 0;
+	transition: opacity 0.35s ease;
+}
+
+#install.open #install-backdrop {
+	opacity: 1;
+}
+
+#install-sheet {
+	position: absolute;
+	left: 50%;
+	bottom: 0;
+	width: min(480px, 100%);
+	max-height: calc(100% - 24px - env(safe-area-inset-top));
+	overflow: hidden auto;
+	box-sizing: border-box;
+	padding: 8px 20px calc(20px + env(safe-area-inset-bottom));
+	background: var(--surface);
+	border: 2px solid var(--line);
+	border-bottom: 0;
+	border-radius: 28px 28px 0 0;
+	/* the first shadow is a solid copy of the sheet below it, so the open spring's overshoot never shows a gap */
+	box-shadow: 0 80px 0 var(--surface), 0 -10px 30px rgba(51, 20, 10, 0.22);
+	transform: translate(-50%, 100%);
+	transition: transform 0.32s cubic-bezier(0.4, 0, 1, 1);
+	touch-action: none;
+	user-select: none;
+	-webkit-user-select: none;
+	cursor: grab;
+	outline: none;
+}
+
+#install.open #install-sheet {
+	transform: translate(-50%, 0);
+	transition: transform 0.55s cubic-bezier(0.2, 1.25, 0.35, 1);
+}
+
+#install-sheet.dragging {
+	transition: none !important;
+	cursor: grabbing;
+}
+
+.install-handle {
+	width: 44px;
+	height: 5px;
+	margin: 0 auto 14px;
+	border-radius: 3px;
+	background: var(--edge);
+}
+
+.install-head {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding-right: 36px;
+}
+
+.install-head img {
+	flex: none;
+	width: 60px;
+	height: 60px;
+	border-radius: 14px;
+	box-shadow: 0 3px 0 var(--edge), 0 6px 14px rgba(51, 20, 10, 0.14);
+	pointer-events: none;
+}
+
+.install-head h2 {
+	margin: 0 0 2px;
+	font-family: 'Lilita One', var(--round);
+	font-weight: 400;
+	font-size: 25px;
+	line-height: 1.05;
+	color: var(--ink);
+}
+
+.install-head p {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.3;
+	color: var(--muted);
+}
+
+#install-close {
+	position: absolute;
+	top: 16px;
+	right: 14px;
+	width: 34px;
+	height: 34px;
+	display: grid;
+	place-items: center;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: var(--line);
+	color: var(--muted);
+	cursor: pointer;
+}
+
+#install-close svg {
+	width: 14px;
+	height: 14px;
+}
+
+#install-steps {
+	list-style: none;
+	margin: 18px 0 0;
+	padding: 4px 14px;
+	border-radius: 20px;
+	background: #FBEFE6;
+	border: 1px solid var(--line);
+	counter-reset: step;
+}
+
+#install-steps li {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 11px 0;
+	font-size: 16px;
+	line-height: 1.35;
+	counter-increment: step;
+}
+
+#install-steps li + li {
+	border-top: 1px dashed var(--edge);
+}
+
+#install-steps li::before {
+	content: counter(step);
+	flex: none;
+	width: 28px;
+	height: 28px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	background: var(--accent);
+	box-shadow: 0 2px 0 var(--accent-dark);
+	color: #fff;
+	font-family: 'Lilita One', var(--round);
+	font-size: 16px;
+}
+
+#install-steps b {
+	font-weight: 700;
+	color: var(--ink);
+}
+
+#install-steps small {
+	display: block;
+	margin-top: 2px;
+	font-size: 13px;
+	color: var(--muted);
+}
+
+.btn {
+	white-space: nowrap;
+}
+
+/* the browser's own button, drawn inline so people know what to look for */
+.ico {
+	display: inline-grid;
+	place-items: center;
+	width: 26px;
+	height: 24px;
+	margin: -3px 0 -3px 1px;
+	vertical-align: middle;
+	border-radius: 8px;
+	background: #fff;
+	border: 1px solid var(--edge);
+	color: #007AFF;
+}
+
+.ico.android {
+	color: var(--ink);
+}
+
+.ico svg {
+	width: 16px;
+	height: 16px;
+}
+
+#install-steps:empty {
+	display: none;
+}
+
+.install-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: 18px;
+}
+
+.install-actions button {
+	appearance: none;
+	border: 0;
+	cursor: pointer;
+	font-family: 'Lilita One', var(--round);
+	font-size: 20px;
+}
+
+#install-go {
+	padding: 13px 24px;
+	border-radius: 999px;
+	background: var(--accent);
+	box-shadow: 0 5px 0 var(--accent-dark);
+	color: #fff;
+}
+
+#install-go:active {
+	transform: translateY(3px);
+	box-shadow: 0 2px 0 var(--accent-dark);
+}
+
+#install-later {
+	padding: 10px;
+	background: none;
+	color: var(--muted);
+	font-family: var(--round);
+	font-size: 16px;
+	font-weight: 600;
+}
+
+#install-later[hidden] {
+	display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#install-sheet, #install.open #install-sheet, #install-backdrop {
+		transition-duration: 0.01s !important;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.dessert svg, .dessert::after, .fill { animation: none !important; }
 	.track.indeterminate .fill { left: 33%; }
@@ -355,6 +611,26 @@ body {
 					<p>The game couldn't start.</p>
 					<div id="status-notice"></div>
 					<button id="status-retry" type="button">Try again</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="install" aria-hidden="true">
+			<div id="install-backdrop"></div>
+			<div id="install-sheet" role="dialog" aria-modal="true" aria-labelledby="install-title" aria-describedby="install-sub" tabindex="-1">
+				<div class="install-handle" aria-hidden="true"></div>
+				<button id="install-close" type="button" aria-label="Close"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+				<div class="install-head">
+					<img src="index.apple-touch-icon.png" alt="">
+					<div>
+						<h2 id="install-title">Play it like an app</h2>
+						<p id="install-sub">Add Dessert Drop to your Home Screen for full-screen play, one tap away.</p>
+					</div>
+				</div>
+				<ol id="install-steps"></ol>
+				<div class="install-actions">
+					<button id="install-go" type="button">Got it</button>
+					<button id="install-later" type="button" hidden>Not now</button>
 				</div>
 			</div>
 		</div>
@@ -417,6 +693,7 @@ const engine = new Engine(GODOT_CONFIG);
 		requestAnimationFrame(() => requestAnimationFrame(() => {
 			statusOverlay.classList.add('done');
 			setTimeout(() => statusOverlay.remove(), 600);
+			window.dispatchEvent(new Event('dessertdrop:ready'));
 		}));
 	}
 
@@ -473,6 +750,375 @@ const engine = new Engine(GODOT_CONFIG);
 			'onProgress': setProgress,
 		}).then(hideStatus, displayFailureNotice);
 	}
+}());
+		</script>
+		<script>
+// "Add to Home Screen" sheet: once the game is up on a phone or tablet browser,
+// a draggable bottom sheet walks through installing it, with steps for the
+// visitor's OS and browser (or the native install prompt where there is one).
+(function () {
+	const SNOOZE_KEY = 'dd-install-snoozed';
+	const INSTALLED_KEY = 'dd-installed';
+	const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+	const SHOW_DELAY_MS = 1500;
+
+	const root = document.getElementById('install');
+	const sheet = document.getElementById('install-sheet');
+	const backdrop = document.getElementById('install-backdrop');
+	const steps = document.getElementById('install-steps');
+	const sub = document.getElementById('install-sub');
+	const goBtn = document.getElementById('install-go');
+	const laterBtn = document.getElementById('install-later');
+
+	function store(key, value) {
+		try {
+			if (value === undefined) {
+				return window.localStorage.getItem(key);
+			}
+			window.localStorage.setItem(key, value);
+		} catch (e) {
+			// private mode or blocked storage: just show the sheet again next time
+		}
+		return null;
+	}
+
+	// ---- where are we? ----
+	const ua = navigator.userAgent;
+	// iPadOS 13+ Safari reports itself as a Mac; touch support gives it away
+	const isIPad = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+	const isIOS = isIPad || /iPhone|iPod/.test(ua);
+	const isAndroid = /Android/i.test(ua);
+	const standalone = window.matchMedia('(display-mode: standalone)').matches
+		|| window.matchMedia('(display-mode: fullscreen)').matches
+		|| navigator.standalone === true;
+	const inApp = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Twitter|TikTok|musical_ly|Snapchat|LinkedInApp|Pinterest|GSA\/|DuckDuckGo\/\d/.test(ua)
+		|| (isAndroid && /; wv\)/.test(ua));
+
+	function iosMajor() {
+		// Safari's own version tracks the OS (and stays honest on iOS 26, whose "OS 18_6" is frozen)
+		const v = /Version\/(\d+)/.exec(ua) || /OS (\d+)_/.exec(ua);
+		return v ? parseInt(v[1], 10) : 0;
+	}
+
+	// ---- the browsers' own buttons, drawn inline ----
+	const ICONS = {
+		share: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5v9M5 4.3 8 1.5l3 2.8"/><path d="M5.5 6.5H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-1.5"/></svg>',
+		add: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="3"/><path d="M8 5v6M5 8h6"/></svg>',
+		dots: '<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.6"/><circle cx="8" cy="8" r="1.6"/><circle cx="13" cy="8" r="1.6"/></svg>',
+		kebab: '<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3" r="1.6"/><circle cx="8" cy="8" r="1.6"/><circle cx="8" cy="13" r="1.6"/></svg>',
+		menu: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 4h11M2.5 8h11M2.5 12h11"/></svg>',
+	};
+
+	// a button's name in bold with its icon, kept on one line
+	function ico(name, label) {
+		const cls = isAndroid ? 'ico android' : 'ico';
+		if (!label) {
+			return '<span class="' + cls + '" role="img" aria-label="' + ({ dots: 'More', kebab: 'Menu', menu: 'Menu' }[name] || name) + ' button">' + ICONS[name] + '</span>';
+		}
+		return '<span class="btn"><b>' + label + '</b> <span class="' + cls + '" aria-hidden="true">' + ICONS[name] + '</span></span>';
+	}
+
+	// ---- steps per platform ----
+	function iosSteps() {
+		const v = iosMajor();
+		const addLine = 'Scroll down and tap ' + ico('add', 'Add to Home Screen');
+		if (inApp) {
+			return [
+				'This app\'s built-in browser can\'t add games to your Home Screen.',
+				'Tap ' + ico('dots', '') + ' at the top and choose <b>Open in Safari</b> (or <b>Open in browser</b>).',
+				'Come back here in Safari and follow the steps.',
+			];
+		}
+		if (/CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|YaBrowser|Brave/.test(ua) || !/Safari\//.test(ua)) {
+			// other iOS browsers gained Add to Home Screen in iOS 16.4
+			if (v && v < 16 || /OS 1[0-5]_|OS 16_[0-3]\D/.test(ua)) {
+				return [
+					'Open this page in <b>Safari</b>. Other browsers can\'t add to the Home Screen on this version of iOS.',
+					'Tap ' + ico('share', 'Share') + ', then <b>Add to Home Screen</b>.',
+				];
+			}
+			const first = /CriOS/.test(ua)
+				? 'Tap ' + ico('share', 'Share') + ' in the address bar'
+				: /FxiOS/.test(ua)
+					? 'Tap ' + ico('menu', '') + ', then ' + ico('share', 'Share')
+					: 'Open the browser menu and tap ' + ico('share', 'Share');
+			return [first, addLine + '<small>Tap <b>More</b> if it\'s not in the list.</small>', 'Tap <b>Add</b>'];
+		}
+		let first;
+		if (v >= 26 && !isIPad) {
+			first = 'Tap ' + ico('dots', '') + ' next to the address bar, then ' + ico('share', 'Share');
+		} else if (isIPad) {
+			first = 'Tap ' + ico('share', 'Share') + ' at the top right';
+		} else {
+			first = 'Tap ' + ico('share', 'Share') + ' in the toolbar at the bottom';
+		}
+		return [
+			first,
+			addLine + (v >= 26 ? '<small>Tap <b>View More</b> if it\'s not in the list.</small>' : ''),
+			v >= 26 ? 'Leave <b>Open as Web App</b> on and tap <b>Add</b>' : 'Tap <b>Add</b> in the top corner',
+		];
+	}
+
+	function androidSteps() {
+		if (inApp) {
+			return [
+				'This app\'s built-in browser can\'t install games.',
+				'Tap ' + ico('kebab', '') + ' at the top and choose <b>Open in browser</b> (or <b>Open in Chrome</b>).',
+				'Come back here and follow the steps.',
+			];
+		}
+		if (/SamsungBrowser/.test(ua)) {
+			return [
+				'Tap ' + ico('menu', '') + ' at the bottom right',
+				'Tap <b>Add page to</b>',
+				'Choose <b>Home screen</b>',
+			];
+		}
+		if (/Firefox\//.test(ua)) {
+			return [
+				'Tap ' + ico('kebab', '') + ' next to the address bar',
+				'Tap <b>Add app to Home screen</b><small>Some versions call it Add to Home screen, or keep it under More.</small>',
+				'Tap <b>Add</b>',
+			];
+		}
+		if (/EdgA\//.test(ua)) {
+			return [
+				'Tap ' + ico('dots', '') + ' at the bottom',
+				'Tap <b>Add to phone</b>',
+				'Tap <b>Install</b>',
+			];
+		}
+		if (/Chrome\//.test(ua) && !/OPR\/|Brave|YaBrowser|Vivaldi|UCBrowser/.test(ua)) {
+			return [
+				'Tap ' + ico('kebab', '') + ' next to the address bar',
+				'Tap <b>Add to Home screen</b>',
+				'Tap <b>Install</b>',
+			];
+		}
+		return [
+			'Open your browser\'s menu',
+			'Tap <b>Add to Home screen</b> or <b>Install app</b>',
+			'Confirm to add it',
+		];
+	}
+
+	// ---- Chromium's native install prompt (Android Chrome, Edge, Samsung) ----
+	let deferredPrompt = null;
+
+	function render() {
+		const native = deferredPrompt !== null;
+		steps.innerHTML = native ? '' : (isIOS ? iosSteps() : androidSteps()).map((s) => '<li><span>' + s + '</span></li>').join('');
+		sub.textContent = native
+			? 'Install Dessert Drop for full-screen play, one tap away. No app store needed.'
+			: 'Add Dessert Drop to your Home Screen for full-screen play, one tap away.';
+		goBtn.textContent = native ? 'Install' : 'Got it';
+		laterBtn.hidden = !native;
+	}
+
+	window.addEventListener('beforeinstallprompt', (e) => {
+		e.preventDefault();
+		deferredPrompt = e;
+		render();
+	});
+
+	window.addEventListener('appinstalled', () => {
+		store(INSTALLED_KEY, '1');
+		deferredPrompt = null;
+		close(false);
+	});
+
+	// ---- open / close ----
+	let isOpen = false;
+	let returnFocus = null;
+
+	function open() {
+		if (isOpen) {
+			return;
+		}
+		isOpen = true;
+		render();
+		returnFocus = document.activeElement;
+		root.setAttribute('aria-hidden', 'false');
+		root.classList.add('shown');
+		sheet.style.transform = '';
+		backdrop.style.opacity = '';
+		// next frame, so the slide-up transition runs from off-screen
+		requestAnimationFrame(() => requestAnimationFrame(() => {
+			root.classList.add('open');
+			sheet.focus({ preventScroll: true });
+		}));
+	}
+
+	function close(snooze) {
+		if (!isOpen) {
+			return;
+		}
+		isOpen = false;
+		if (snooze) {
+			store(SNOOZE_KEY, String(Date.now()));
+		}
+		root.classList.remove('open');
+		sheet.style.transform = '';
+		backdrop.style.opacity = '';
+		root.setAttribute('aria-hidden', 'true');
+		setTimeout(() => {
+			if (!isOpen) {
+				root.classList.remove('shown');
+			}
+		}, 400);
+		const canvas = document.getElementById('canvas');
+		(returnFocus && returnFocus !== document.body ? returnFocus : canvas).focus({ preventScroll: true });
+	}
+
+	goBtn.addEventListener('click', () => {
+		if (!deferredPrompt) {
+			close(true);
+			return;
+		}
+		const prompt = deferredPrompt;
+		deferredPrompt = null;
+		prompt.prompt();
+		prompt.userChoice.then((choice) => {
+			if (choice && choice.outcome === 'accepted') {
+				store(INSTALLED_KEY, '1');
+				close(false);
+			} else {
+				close(true);
+			}
+		}, () => close(true));
+	});
+	laterBtn.addEventListener('click', () => close(true));
+	document.getElementById('install-close').addEventListener('click', () => close(true));
+	backdrop.addEventListener('click', () => close(true));
+	document.addEventListener('keydown', (e) => {
+		if (isOpen && e.key === 'Escape') {
+			e.stopPropagation();
+			close(true);
+		}
+	}, true);
+	// keep Tab inside the sheet
+	sheet.addEventListener('keydown', (e) => {
+		if (e.key !== 'Tab') {
+			return;
+		}
+		const items = Array.from(sheet.querySelectorAll('button')).filter((b) => !b.hidden);
+		const first = items[0];
+		const last = items[items.length - 1];
+		if (e.shiftKey && (document.activeElement === first || document.activeElement === sheet)) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	});
+
+	// ---- drag to dismiss ----
+	// Follows the finger down; resists going up (at most ~48 px, like the perks sheet);
+	// a fling or a pull past a third of its height dismisses, anything less springs back.
+	const DRAG_SLOP = 6;
+	let drag = null;
+
+	function setOffset(y) {
+		sheet.style.transform = 'translate(-50%, ' + y + 'px)';
+		const h = sheet.offsetHeight || 1;
+		backdrop.style.opacity = String(Math.max(0, Math.min(1, 1 - y / h)));
+	}
+
+	sheet.addEventListener('pointerdown', (e) => {
+		if (!isOpen || (e.pointerType === 'mouse' && e.button !== 0)) {
+			return;
+		}
+		drag = { id: e.pointerId, startY: e.clientY, y: 0, moved: false, samples: [{ t: e.timeStamp, y: 0 }] };
+	});
+
+	window.addEventListener('pointermove', (e) => {
+		if (!drag || e.pointerId !== drag.id) {
+			return;
+		}
+		const dy = e.clientY - drag.startY;
+		if (!drag.moved) {
+			if (Math.abs(dy) < DRAG_SLOP) {
+				return;
+			}
+			drag.moved = true;
+			sheet.classList.add('dragging');
+			try {
+				sheet.setPointerCapture(e.pointerId);
+			} catch (err) {
+				// pointer already gone
+			}
+		}
+		drag.y = dy >= 0 ? dy : -48 * (1 - Math.exp(dy / 160));
+		setOffset(drag.y);
+		drag.samples.push({ t: e.timeStamp, y: dy });
+		if (drag.samples.length > 6) {
+			drag.samples.shift();
+		}
+	});
+
+	function endDrag(e) {
+		if (!drag || e.pointerId !== drag.id) {
+			return;
+		}
+		const d = drag;
+		drag = null;
+		if (!d.moved) {
+			return;
+		}
+		// swallow the click a drag that started on a button would fire
+		const swallow = (ev) => {
+			ev.stopPropagation();
+			ev.preventDefault();
+		};
+		sheet.addEventListener('click', swallow, { capture: true, once: true });
+		setTimeout(() => sheet.removeEventListener('click', swallow, { capture: true }), 350);
+
+		// speed over the last ~100 ms, so a pause before letting go isn't a fling
+		const b = d.samples[d.samples.length - 1];
+		const a = d.samples.find((s) => b.t - s.t <= 100) || b;
+		const velocity = b.t > a.t ? (b.y - a.y) / (b.t - a.t) : 0; // px per ms, + is down
+		sheet.classList.remove('dragging');
+		if (e.type !== 'pointercancel' && (velocity > 0.5 || d.y > sheet.offsetHeight / 3)) {
+			// carry the fling's speed into the exit
+			const remaining = sheet.offsetHeight - d.y;
+			const ms = Math.max(140, Math.min(320, remaining / Math.max(velocity, 1.2)));
+			sheet.style.transition = 'transform ' + ms + 'ms cubic-bezier(0.2, 0.6, 0.4, 1)';
+			backdrop.style.transition = 'opacity ' + ms + 'ms ease';
+			setTimeout(() => {
+				sheet.style.transition = '';
+				backdrop.style.transition = '';
+			}, ms + 50);
+			close(true);
+		} else {
+			// spring back
+			sheet.style.transform = '';
+			backdrop.style.opacity = '';
+		}
+	}
+
+	// on window, so a quick swipe that leaves the sheet before the drag starts still counts
+	window.addEventListener('pointerup', endDrag);
+	window.addEventListener('pointercancel', endDrag);
+
+	// ---- when to show ----
+	function shouldShow() {
+		if (standalone || !(isIOS || isAndroid) || store(INSTALLED_KEY) === '1') {
+			return false;
+		}
+		const snoozed = parseInt(store(SNOOZE_KEY) || '0', 10);
+		return !(snoozed && Date.now() - snoozed < SNOOZE_MS);
+	}
+
+	// fired by the preloader once the game is running
+	window.addEventListener('dessertdrop:ready', () => {
+		if (shouldShow()) {
+			setTimeout(open, SHOW_DELAY_MS);
+		}
+	}, { once: true });
+
+	// for testing: dessertDropInstallSheet() opens it regardless
+	window.dessertDropInstallSheet = open;
 }());
 		</script>
 	</body>

@@ -77,6 +77,10 @@ done
 echo "==> Copying static files (link-preview image, etc.)"
 find "$ROOT/web/public" -maxdepth 1 -type f ! -name '.gdignore' -exec cp {} "$OUT/" \;
 
+# Godot builds the apple-touch-icon from the project icon, which is transparent;
+# iOS fills transparent pixels with black, so use the opaque PWA icon instead.
+cp "$ROOT/assets/app_icon/icon_180.png" "$OUT/index.apple-touch-icon.png"
+
 echo "==> Compressing index.wasm"
 gzip -9 -n -f "$OUT/index.wasm"   # -> index.wasm.gz
 
