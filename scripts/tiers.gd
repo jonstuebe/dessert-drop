@@ -9,7 +9,7 @@ const DROP_WEIGHTS: Array[float] = [0.34, 0.30, 0.22, 0.14]
 const COIN_REWARD := {7: 2, 8: 5}   # strawberry cake, wedding cake
 
 const DATA := [
-	{"key": "sprinkle", "file": "d0_sprinkle", "name": "Sprinkle", "shape": "rect", "bw": 2.6, "bh": 1.1, "bounce": 0.45, "tone": Color("#FF8FB1")},
+	{"key": "sprinkle", "file": "d0_sprinkle", "name": "Sprinkle", "shape": "rect", "bw": 2.6, "bh": 1.1, "scale": 0.5, "bounce": 0.45, "tone": Color("#FF8FB1")},
 	{"key": "chip", "file": "d1_chip", "name": "Chocolate chip", "shape": "circle", "bounce": 0.38, "tone": Color("#96572F")},
 	{"key": "cookie", "file": "d2_cookie", "name": "Cookie", "shape": "circle", "tone": Color("#E8B063")},
 	{"key": "macaron", "file": "d3_macaron", "name": "Macaron", "shape": "rect", "bw": 2.1, "bh": 1.5, "tone": Color("#CBB5F7")},
@@ -26,14 +26,15 @@ static var _radii: Array[float] = []
 static func count() -> int:
 	return DATA.size()
 
-## Body radius in game pixels.
+## Body radius in game pixels. A tier's optional "scale" resizes only that
+## tier; the tiers above it still grow from the unscaled chain.
 static func radius(i: int) -> float:
 	if _radii.is_empty():
 		var r := 26.0
 		for k in DATA.size():
 			if k > 0:
 				r *= GROWTH[k - 1]
-			_radii.append(r * SCALE)
+			_radii.append(r * SCALE * DATA[k].get("scale", 1.0))
 	return _radii[i]
 
 static func info(i: int) -> Dictionary:
