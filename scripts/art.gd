@@ -35,6 +35,38 @@ static func svg(file: String, scale: float) -> Texture2D:
 static func dessert(tier: int, px_radius: float) -> Texture2D:
 	return svg(Tiers.info(tier)["file"], px_radius / Tiers.ART_R * SS)
 
+## Visible outline of a dessert in game pixels, centred on the body: the largest
+## opaque region (alpha >= 0.5) of the very texture `dessert()` draws, so physics
+## can follow the art. Soft drop shadows stay under 0.3 alpha and don't count.
+static func dessert_outline(tier: int, px_radius: float) -> PackedVector2Array:
+	var key := "outline:%d@%.3f" % [tier, px_radius]
+	if _cache.has(key):
+		return _cache[key]
+	var img := dessert(tier, px_radius).get_image()
+	img.clear_mipmaps()
+	var bm := BitMap.new()
+	bm.create_from_image_alpha(img, 0.5)
+	var best := PackedVector2Array()
+	var best_area := 0.0
+	# epsilon of 1 texture px = 1/SS game px
+	for poly: PackedVector2Array in bm.opaque_to_polygons(Rect2i(Vector2i.ZERO, img.get_size()), 1.0):
+		var a := absf(polygon_area(poly))
+		if a > best_area:
+			best_area = a
+			best = poly
+	var half := Vector2(img.get_size()) / 2.0
+	var out := PackedVector2Array()
+	for p in best:
+		out.append((p - half) / SS)
+	_cache[key] = out
+	return out
+
+static func polygon_area(poly: PackedVector2Array) -> float:
+	var a := 0.0
+	for i in poly.size():
+		a += poly[i].cross(poly[(i + 1) % poly.size()])
+	return a / 2.0
+
 ## Texture for an icon (72-unit viewBox) shown `px` game pixels wide. Show at scale 1/SS.
 static func icon(file: String, px: float) -> Texture2D:
 	return svg(file, px / 72.0 * SS)
