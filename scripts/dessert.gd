@@ -24,16 +24,11 @@ func setup(t: int) -> void:
 	var sz := Tiers.size(t)
 	var r := Tiers.radius(t)
 
-	var shape := CollisionShape2D.new()
-	if Tiers.is_circle(t):
-		var c := CircleShape2D.new()
-		c.radius = r
-		shape.shape = c
-	else:
-		var poly := ConvexPolygonShape2D.new()
-		poly.points = Tiers.rounded_rect(sz, info["ch"] * r)
-		shape.shape = poly
-	add_child(shape)
+	# collision follows the drawn silhouette (see Tiers.shapes)
+	for sh in Tiers.shapes(t):
+		var shape := CollisionShape2D.new()
+		shape.shape = sh
+		add_child(shape)
 
 	sprite = Sprite2D.new()
 	sprite.texture = Art.dessert(t, r)
