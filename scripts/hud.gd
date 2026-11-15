@@ -195,20 +195,23 @@ func _build_ladder() -> void:
 	_ladder_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ladder_glow.modulate = Color(1, 1, 0.92, 0.0)
 	stage_ui.add_child(_ladder_glow)
-	var max_r := Tiers.radius(Tiers.TOP)
+	var max_h := Tiers.size(Tiers.TOP).y
 	var widths: Array[float] = []
 	var heights: Array[float] = []
 	var total := 0.0
 	for i in Tiers.count():
 		var sz := Tiers.size(i)
-		var h := 26.0 + 64.0 * (Tiers.radius(i) / max_r) * (sz.y / Tiers.radius(i) / 2.0)
+		# true to the jar: heights keep the same ratios as the bodies themselves
+		var h := 90.0 * sz.y / max_h
 		var w := h * sz.x / sz.y
 		heights.append(h)
 		widths.append(w)
 		total += w
-	var gap := 10.0
-	var fit := minf(1.0, (660.0 - gap * 8) / total)
-	var x := 360.0 - (total * fit + gap * 8) / 2.0
+	# Fill the shelf's full width: grow the row (up to 135 px tall, so it stays
+	# clear of the header), then spread what's left over as even gaps.
+	var fit := minf((660.0 - 10.0 * 8) / total, 135.0 / 90.0)
+	var gap := (660.0 - total * fit) / 8.0
+	var x := 360.0 - 660.0 / 2.0
 	for i in Tiers.count():
 		var w := widths[i] * fit
 		var h := heights[i] * fit
