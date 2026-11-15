@@ -41,6 +41,7 @@ var _pressing := false
 var _hint: Control
 var _preview_bob: Tween
 var _shake := 0.0
+var _run_started := false
 
 func _ready() -> void:
 	randomize()
@@ -48,7 +49,10 @@ func _ready() -> void:
 	_build_world()
 	hud.perk_pressed.connect(_start_perk)
 	hud.cancel_pressed.connect(_cancel_perk)
-	hud.again_pressed.connect(func() -> void: get_tree().reload_current_scene())
+	hud.again_pressed.connect(func() -> void:
+		# a waiting web update reloads the page instead (same fresh start, new version)
+		if not _web_apply_update():
+			get_tree().reload_current_scene())
 	hud.share_pressed.connect(_share)
 	hud.sheet_toggled.connect(func(open: bool) -> void:
 		if open:
@@ -243,6 +247,9 @@ func _show_preview(animate: bool) -> void:
 func _drop() -> void:
 	if not can_drop or over or mode != "":
 		return
+	if not _run_started:
+		_run_started = true
+		_web_run_active(true)
 	var d := _spawn(current, Vector2(aim_x, DROP_Y), Vector2(randf_range(-0.3, 0.3) * PX, 2.5 * PX))
 	d.angular_velocity = randf_range(-2.0, 2.0)
 	Sfx.play("drop", randf_range(0.9, 1.1) * (1.15 - current * 0.08), -4.0)
@@ -584,6 +591,20 @@ func _game_over() -> void:
 		hud.set_best(score)
 	Sfx.play("gameover")
 	hud.show_game_over(score, new_best, maxi(top_tier, 0))
+	_web_run_active(false)
+
+# ---------- web updates (see the update banner in web/shell.html) ----------
+
+## Holds the page's "new version" banner back while a game is underway.
+func _web_run_active(active: bool) -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.dessertDropUpdate && window.dessertDropUpdate.setRunActive(%s)" % ("true" if active else "false"), true)
+
+## Swaps in a waiting update between games. True when the page is about to reload.
+func _web_apply_update() -> bool:
+	if not OS.has_feature("web"):
+		return false
+	return JavaScriptBridge.eval("!!(window.dessertDropUpdate && window.dessertDropUpdate.applyIfReady())", true) == true
 
 # ---------- sharing ----------
 const SHARE_URL := "https://dessert-drop.jonstuebe.com/"
