@@ -4,11 +4,15 @@
 // build stores it gzipped (index.wasm.gz). This Worker runs only for
 // /index.wasm (see run_worker_first in wrangler.jsonc) and serves the gzipped
 // file with Content-Encoding: gzip; the browser decompresses it transparently.
-// Everything else is served directly by the assets layer.
+// It also serves "/" as /index.html, since html_handling is "none" (see
+// wrangler.jsonc). Everything else is served directly by the assets layer.
 
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
+		if (url.pathname === "/") {
+			return env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
+		}
 		if (url.pathname === "/index.wasm") {
 			const gz = await env.ASSETS.fetch(new URL("/index.wasm.gz", url), {
 				headers: request.headers,
